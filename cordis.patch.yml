@@ -1,0 +1,12 @@
+# dsh-proxy-switch bundle patch
+#
+# 挂一个 host-only 插件：无 UI、无工具，只在进程内维护出站代理策略。
+# 开关就是插件本身的启用/禁用 —— 禁用即 dispose，恢复直连。
+- insert:
+    - id: dsh-proxy-switch
+      name: 'dsh-proxy-switch'
+      config:
+        proxyHost: 127.0.0.1
+        proxyPort: 7897
+        probeIntervalSec: 30
+        probeTimeoutMs: 400
