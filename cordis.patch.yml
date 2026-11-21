@@ -2,11 +2,15 @@
 #
 # 挂一个 host-only 插件：无 UI、无工具，只在进程内维护出站代理策略。
 # 开关就是插件本身的启用/禁用 —— 禁用即 dispose，恢复直连。
+#
+# proxyPort: 0 表示自动探测 proxyPorts（按顺序，第一个响应的就用）。
+# 要锁定单个端口，把 proxyPort 改成具体值，或在 $DSH_HOME/proxy-switch.json 里覆盖。
 - insert:
     - id: dsh-proxy-switch
       name: 'dsh-proxy-switch'
       config:
         proxyHost: 127.0.0.1
-        proxyPort: 7897
+        proxyPort: 0
+        proxyPorts: [7897, 7890, 10809, 8080]
         probeIntervalSec: 30
         probeTimeoutMs: 400
