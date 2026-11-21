@@ -56,6 +56,8 @@ dsh plugin add github:Zkeyi-ps/dsh-proxy-switch
 8080   通用 HTTP 代理
 ```
 
+**自定义端口也不用配。** 上面这些都不通时，插件会读本机代理客户端实际监听的端口（Clash / mihomo / Clash Verge / v2ray / xray / sing-box / shadowsocks / hysteria / nekoray / karing…），并对每个候选发一次真实的 `CONNECT` 请求确认它确实是 HTTP 代理——这样客户端自己的 API 端口（例如 clash-verge 的 33331）不会被误用。
+
 不在列表里的代理，用下面任一方式指定。
 
 ### 方式一：`$DSH_HOME/proxy-switch.json`（推荐）

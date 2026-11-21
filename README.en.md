@@ -56,6 +56,8 @@ Restart the host afterwards. The plugin appears under "Installed" on the Plugins
 8080   generic HTTP proxy
 ```
 
+**Custom ports need no configuration either.** When none of the ports above answer, the plugin reads the ports actually listened on by local proxy clients (Clash / mihomo / Clash Verge / v2ray / xray / sing-box / shadowsocks / hysteria / nekoray / karing…), then sends a real `CONNECT` request to each candidate to confirm it really is an HTTP proxy — so a client's own API port (clash-verge's 33331, for example) is never mistaken for one.
+
 If your proxy is not in that list, pick one of the two ways below.
 
 ### Option 1: `$DSH_HOME/proxy-switch.json` (recommended)
