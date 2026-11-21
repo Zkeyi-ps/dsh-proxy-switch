@@ -1,18 +1,26 @@
 {
-  "id": "dsh-proxy-switch",
-  "version": "0.1.0",
-  "description": "探测本地代理端口（默认 127.0.0.1:7897），通了就把 DSH 的出站 HTTP 策略切到代理，不通就保持直连；运行中每 30 秒复查一次，梯子开关变化会自动跟随。",
-  "contributes": {
-    "tools": [],
-    "mcp": [],
-    "commands": [],
-    "skills": []
-  },
-  "keywords": [
-    "dsh",
-    "dsh-plugin",
-    "deepseek-harness",
-    "proxy",
-    "network"
-  ]
+    "id":  "dsh-proxy-switch",
+    "version":  "0.2.0",
+    "description":  "探测本地代理端口（默认 127.0.0.1:7897），通了就把 DSH 的出站 HTTP 策略切到代理，不通就保持直连；运行中每 30 秒复查一次，梯子开关变化会自动跟随。",
+    "contributes":  {
+                        "tools":  [
+
+                                  ],
+                        "mcp":  [
+
+                                ],
+                        "commands":  [
+
+                                     ],
+                        "skills":  [
+
+                                   ]
+                    },
+    "keywords":  [
+                     "dsh",
+                     "dsh-plugin",
+                     "deepseek-harness",
+                     "proxy",
+                     "network"
+                 ]
 }

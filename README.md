@@ -6,6 +6,33 @@
 
 ---
 
+## 为什么做这个
+
+如果你在国内用 DeepSeek Harness 这类 agent 宿主，日常大概率是这样的：
+
+- **模型调用走国内 API**（DeepSeek / 通义 / 智谱 / Kimi…），直连，很快
+- **但 agent 要联网**——查资料、读文档、拉 npm 包、访问 GitHub——这些需要梯子
+- **梯子平时是关的**，或者开着但经常忘
+
+于是每天都会撞上同一堵墙：
+
+> **DSH 在启动那一刻从环境变量读一次代理，之后再也不看。**
+
+后果是：
+
+| 你的操作 | 结果 |
+| --- | --- |
+| 开着梯子启动，中途关掉 | 网页抓取全部超时，卡在死代理上 |
+| 没开梯子启动，中途打开 | 仍然抓不到，**必须重启 DSH** |
+| 每换一次网络状态 | 重启一次 agent，**当前会话的上下文全丢** |
+
+对国内用户这不是边缘情况，是日常。同类宿主（Claude Code、Cursor、Codex CLI）也有同样的问题——**它们的网络策略是进程级的，而国内的网络状态是随时切换的。**
+
+这个插件把「一次性的启动快照」变成「持续维持的状态」：每 30 秒看一眼代理端口在不在，在就挂上，不在就摘掉，全程不用重启。
+
+**你的模型调用走 loopback，不受影响**——只有真正出网的请求会跟着梯子走。
+---
+
 ## 它解决什么问题
 
 DSH 的出站代理策略由 `@deepseek-ai/dsh-http-proxy` 在**进程启动时**从环境变量解析一次，之后固定不变。
@@ -46,6 +73,8 @@ dsh plugin add github:Zkeyi-ps/dsh-proxy-switch
 安装后重启宿主。插件页「已安装」里会出现 `dsh-proxy-switch`，卡片上的行开关就是启停。
 
 ## 配置
+
+在插件页点开 dsh-proxy-switch 卡片，**代理端口和复查间隔可以直接在界面里改并保存**。下面两种方式覆盖界面没有的字段。
 
 **默认零配置。** 插件按顺序探测常见代理端口，第一个响应的就用：
 
@@ -133,7 +162,7 @@ dirname(process.execPath) / resources / app / dsh / node_modules
 
 ## 已知限制
 
-- **无配置界面**。配置写在 `cordis.patch.yml`，重启或 HMR 生效。配置页（`plugins.bundle.config`）计划在后续版本。
+- **配置页只覆盖两个字段**（代理端口、复查间隔）。候选端口列表与进程发现开关仍写在 `cordis.patch.yml` 或 `proxy-switch.json`。
 - **只支持 HTTP 代理**。SOCKS / PAC 不支持，这是上游策略的限制。
 - **不管理代理软件本身**。插件只探测端口，不启动 Clash / v2ray 之类。
 - **loopback 始终直连**。这是上游行为：`localhost`、`127.0.0.0/8`、`::1` 不会被代理，所以 DSH 与本地模型网关的通信不受影响。
@@ -143,7 +172,8 @@ dirname(process.execPath) / resources / app / dsh / node_modules
 插件是纯 host 侧 cordis 插件，无构建步骤：
 
 ```
-host/index.js       插件主体（ESM，导出 name 与 apply）
+host/index.js       宿主侧插件（ESM，导出 name 与 apply）
+client.js           浏览器侧配置页（window.__ModuleLoader__ 格式，手写 createElement，无构建）
 cordis.patch.yml    组合包 patch，把插件插进 profile 树
 dsh.plugin.json     插件清单（描述、贡献点）
 ```

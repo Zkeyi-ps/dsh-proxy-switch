@@ -6,6 +6,33 @@ English | [中文](README.md)
 
 ---
 
+## Why this exists
+
+If you run an agent host like DeepSeek Harness outside the US, your day usually looks like this:
+
+- **Model calls go to a regional API** — direct, fast
+- **But the agent needs the internet** — docs, packages, GitHub — which needs a VPN
+- **The VPN is usually off**, or on and then forgotten
+
+So you hit the same wall every day:
+
+> **DSH reads the proxy from the environment once, at startup, and never again.**
+
+The consequences:
+
+| What you do | What happens |
+| --- | --- |
+| Start with the VPN up, turn it off | Every web fetch times out on a dead proxy |
+| Start with the VPN down, turn it on | Still broken — **you must restart DSH** |
+| Every network change | Restart the agent, **lose the session context** |
+
+This is not an edge case; it is the normal workflow. Other agent hosts (Claude Code, Cursor, Codex CLI) share the problem: **their network policy is per-process, while real-world connectivity changes all the time.**
+
+This plugin turns that one-shot startup snapshot into a continuously maintained state: every 30 seconds it checks whether the proxy port is there, mounts the policy when it is, unmounts it when it is not — no restart, ever.
+
+**Your model calls go over loopback and are unaffected** — only traffic that actually leaves the machine follows the VPN.
+---
+
 ## The problem
 
 DSH resolves its outbound proxy policy once, from the launch environment, through `@deepseek-ai/dsh-http-proxy`. After that it is fixed for the life of the process.
@@ -46,6 +73,8 @@ Or manually: place this repository at `$DSH_HOME/profiles/<profile>/node_modules
 Restart the host afterwards. The plugin appears under "Installed" on the Plugins page; its row toggle enables and disables it.
 
 ## Configuration
+
+Open the dsh-proxy-switch card on the Plugins page: **the proxy port and re-probe interval are editable and saved right there**. The two ways below cover the fields the page does not show.
 
 **Zero configuration by default.** The plugin probes common proxy ports in order and uses the first one that answers:
 
@@ -133,7 +162,7 @@ This depends on public exports of the DSH-internal package `@deepseek-ai/dsh-htt
 
 ## Known limitations
 
-- **No settings UI yet.** Configuration lives in `cordis.patch.yml`. A `plugins.bundle.config` page is planned.
+- **The settings page covers two fields** (proxy port, re-probe interval). The candidate port list and the process-discovery switch still live in `cordis.patch.yml` or `proxy-switch.json`.
 - **HTTP proxies only.** SOCKS and PAC are unsupported — an upstream policy limit.
 - **Does not manage the proxy client.** It probes a port; it does not start Clash or v2ray.
 - **Loopback always bypasses the proxy.** Upstream behaviour: `localhost`, `127.0.0.0/8` and `::1` are never proxied, so DSH-to-local-gateway traffic is unaffected.
@@ -143,7 +172,8 @@ This depends on public exports of the DSH-internal package `@deepseek-ai/dsh-htt
 A host-only cordis plugin with no build step:
 
 ```
-host/index.js       the plugin (ESM; exports name and apply)
+host/index.js       the host-side plugin (ESM; exports name and apply)
+client.js           the browser-side settings page (window.__ModuleLoader__ format, hand-written createElement, no build step)
 cordis.patch.yml    the bundle patch that inserts it into the profile tree
 dsh.plugin.json     plugin manifest (description, contributions)
 ```

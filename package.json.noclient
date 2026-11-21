@@ -1,0 +1,49 @@
+{
+    "name":  "dsh-proxy-switch",
+    "version":  "0.2.0",
+    "type":  "module",
+    "description":  "Probe a local proxy port at runtime and mount/unmount DeepSeek Harness\u0027s outbound HTTP proxy policy without restarting the host.",
+    "license":  "MIT",
+    "author":  "Zkeyi-ps",
+    "repository":  {
+                       "type":  "git",
+                       "url":  "git+https://github.com/Zkeyi-ps/dsh-proxy-switch.git"
+                   },
+    "homepage":  "https://github.com/Zkeyi-ps/dsh-proxy-switch#readme",
+    "bugs":  {
+                 "url":  "https://github.com/Zkeyi-ps/dsh-proxy-switch/issues"
+             },
+    "engines":  {
+                    "dsh":  "\u003e=0.2.0-rc.2"
+                },
+    "keywords":  [
+                     "dsh",
+                     "dsh-plugin",
+                     "deepseek-harness",
+                     "proxy",
+                     "network",
+                     "clash",
+                     "v2ray"
+                 ],
+    "main":  "host/index.js",
+    "exports":  {
+                    ".":  "./host/index.js",
+                    "./package.json":  "./package.json",
+                    "./client":  "./client.js"
+                },
+    "files":  [
+                  "host/index.js",
+                  "cordis.patch.yml",
+                  "dsh.plugin.json",
+                  "README.md",
+                  "README.en.md",
+                  "LICENSE",
+                  "CHANGELOG.md",
+                  "client.js"
+              ],
+    "dsh":  {
+                "bundle":  {
+                               "patch":  "./cordis.patch.yml"
+                           }
+            }
+}
