@@ -47,25 +47,64 @@ dsh plugin add github:Zkeyi-ps/dsh-proxy-switch
 
 ## 配置
 
-在 profile 的 `cordis.patch.yml` 里（安装后由本包的 `cordis.patch.yml` 提供默认值）：
+**默认零配置。** 插件按顺序探测常见代理端口，第一个响应的就用：
+
+```
+7897   Clash Verge（mixed 端口，最常见）
+7890   Clash / Clash for Windows（HTTP）
+10809  v2rayN（HTTP）
+8080   通用 HTTP 代理
+```
+
+不在列表里的代理，用下面任一方式指定。
+
+### 方式一：`$DSH_HOME/proxy-switch.json`（推荐）
+
+```
+Windows:  C:\Users\<你>\.dsh\proxy-switch.json
+macOS:    ~/.dsh/proxy-switch.json
+```
+
+```json
+{
+  "proxyHost": "127.0.0.1",
+  "proxyPort": 8888
+}
+```
+
+**改完不用重启。** 插件每次复查（默认 30 秒）都会重读这个文件，端口变了会重新挂载。删掉文件就回到自动探测。
+
+也可以只改探测列表，保留自动行为：
+
+```json
+{
+  "proxyPorts": [8888, 7897, 1080]
+}
+```
+
+### 方式二：`cordis.patch.yml`
 
 ```yaml
 - insert:
     - id: dsh-proxy-switch
       name: 'dsh-proxy-switch'
       config:
-        proxyHost: 127.0.0.1     # 代理地址
-        proxyPort: 7897          # 代理端口（Clash Verge 默认 mixed 端口）
+        proxyHost: 127.0.0.1
+        proxyPort: 0             # 0 = 自动探测 proxyPorts
+        proxyPorts: [7897, 7890, 10809, 8080]
         probeIntervalSec: 30     # 复查间隔，最小 5 秒
         probeTimeoutMs: 400      # 单次 TCP 探测超时
 ```
+
+`proxyPort` 大于 0 时只探那一个端口；为 0 时按 `proxyPorts` 顺序自动探测。
+
+`proxy-switch.json` 里的同名字段会覆盖这里的值。
 
 改动在 profile 启用 HMR 时即时重组；否则重启宿主生效。
 
 ### 为什么不读系统代理设置
 
 DSH 的 `dsh-http-proxy` 只接受环境变量里的 `http(s)://` 代理 URL，不读 Windows/macOS 的系统代理，也不支持 SOCKS 或 PAC。本插件沿用同一份策略，因此同样只支持 HTTP 代理。
-
 ## 原理
 
 `@deepseek-ai/dsh-http-proxy` 导出 `installProxyFromEnvironment(env, report)`，返回一个 **disposer**。插件用它在运行时装卸策略：

@@ -47,25 +47,64 @@ Restart the host afterwards. The plugin appears under "Installed" on the Plugins
 
 ## Configuration
 
-In the profile's `cordis.patch.yml` (this package's own `cordis.patch.yml` supplies the defaults):
+**Zero configuration by default.** The plugin probes common proxy ports in order and uses the first one that answers:
+
+```
+7897   Clash Verge (mixed port, most common)
+7890   Clash / Clash for Windows (HTTP)
+10809  v2rayN (HTTP)
+8080   generic HTTP proxy
+```
+
+If your proxy is not in that list, pick one of the two ways below.
+
+### Option 1: `$DSH_HOME/proxy-switch.json` (recommended)
+
+```
+Windows:  C:\Users\<you>\.dsh\proxy-switch.json
+macOS:    ~/.dsh/proxy-switch.json
+```
+
+```json
+{
+  "proxyHost": "127.0.0.1",
+  "proxyPort": 8888
+}
+```
+
+**No restart needed.** The file is re-read on every probe (30 s by default), and a changed port re-mounts the policy. Delete the file to fall back to auto-detection.
+
+You can also just change the candidate list and keep auto-detection:
+
+```json
+{
+  "proxyPorts": [8888, 7897, 1080]
+}
+```
+
+### Option 2: `cordis.patch.yml`
 
 ```yaml
 - insert:
     - id: dsh-proxy-switch
       name: 'dsh-proxy-switch'
       config:
-        proxyHost: 127.0.0.1     # proxy address
-        proxyPort: 7897          # proxy port (Clash Verge default mixed port)
+        proxyHost: 127.0.0.1
+        proxyPort: 0             # 0 = auto-probe proxyPorts
+        proxyPorts: [7897, 7890, 10809, 8080]
         probeIntervalSec: 30     # re-probe interval, minimum 5s
         probeTimeoutMs: 400      # per-probe TCP timeout
 ```
+
+`proxyPort` above 0 probes only that port; 0 auto-probes `proxyPorts` in order.
+
+Fields in `proxy-switch.json` override the values here.
 
 With HMR enabled on the profile the change re-composes immediately; otherwise restart the host.
 
 ### Why it does not read the system proxy
 
 DSH's `dsh-http-proxy` only accepts `http(s)://` proxy URLs from the environment. It does not read the Windows/macOS system proxy and does not support SOCKS or PAC. This plugin reuses that same policy, so the same limits apply.
-
 ## How it works
 
 `@deepseek-ai/dsh-http-proxy` exports `installProxyFromEnvironment(env, report)`, which returns a **disposer**. The plugin uses it to mount and unmount the policy at runtime:
