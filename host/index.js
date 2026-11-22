@@ -245,11 +245,15 @@ let Config
 try {
   const schemastery = await loadAppModule('@deepseek-ai/schemastery', '@deepseek-ai/schemastery/lib/index.mjs')
   const z = schemastery.default ?? schemastery
+  // 只有 .volatile() 的字段会出现在配置页里——宿主的 volatileForm 会丢掉其余字段，
+  // 一个 volatile 都没有时整个 namespace 直接不被服务。
+  // 端口和间隔改了不需要重挂插件，所以标 volatile；候选端口列表和进程发现开关
+  // 留在 cordis.patch.yml / proxy-switch.json 里配置。
   Config = z.object({
     proxyHost: z.string().default('127.0.0.1'),
-    proxyPort: z.number().step(1).min(0).default(0),
+    proxyPort: z.number().step(1).min(0).default(0).volatile(),
     proxyPorts: z.array(z.number()).default([7897, 7890, 10809, 8080]),
-    probeIntervalSec: z.number().step(1).min(5).default(30),
+    probeIntervalSec: z.number().step(1).min(5).default(30).volatile(),
     probeTimeoutMs: z.number().step(1).min(100).default(400),
     discoverProcesses: z.boolean().default(true),
     discoverTimeoutMs: z.number().step(1).min(1000).default(4000),
