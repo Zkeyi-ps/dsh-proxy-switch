@@ -264,8 +264,31 @@ try {
 }
 export { Config }
 
+/**
+ * volatile 字段在 apply 里拿到的是运行时引用（带 get()），不是值本身。
+ * 非 volatile 字段、或 Config 没能加载时，它就是普通值。两种都要能吃。
+ */
+function unwrap(value, fallback) {
+  if (value === void 0 || value === null) return fallback
+  if (typeof value === 'object' && typeof value.get === 'function') {
+    try {
+      const inner = value.get()
+      return inner === void 0 || inner === null ? fallback : inner
+    } catch {
+      return fallback
+    }
+  }
+  return value
+}
+
 export function apply(ctx, config) {
-  const base = { ...DEFAULTS, ...(config || {}) }
+  const given = config || {}
+  const base = {
+    ...DEFAULTS,
+    ...given,
+    proxyPort: unwrap(given.proxyPort, DEFAULTS.proxyPort),
+    probeIntervalSec: unwrap(given.probeIntervalSec, DEFAULTS.probeIntervalSec),
+  }
   log('已加载；配置文件 ' + configFilePath())
 
   ctx.effect(() => {
