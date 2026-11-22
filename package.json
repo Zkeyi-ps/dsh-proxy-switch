@@ -29,7 +29,8 @@
     "exports":  {
                     ".":  "./host/index.js",
                     "./package.json":  "./package.json",
-                    "./client":  "./client.js"
+                    "./client":  "./client.js",
+                    "./locale/*.json":  "./locale/*.json"
                 },
     "files":  [
                   "host/index.js",
@@ -39,7 +40,9 @@
                   "README.en.md",
                   "LICENSE",
                   "CHANGELOG.md",
-                  "client.js"
+                  "client.js",
+                  "locale/*.json",
+                  "icon.svg"
               ],
     "dsh":  {
                 "bundle":  {
@@ -54,5 +57,6 @@
                                               "@deepseek-ai/dsh-api-remotes"
                                           ]
                            }
-            }
+            },
+    "icon":  "./icon.svg"
 }

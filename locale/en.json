@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Proxy switch",
+    "description": "Probe a local proxy port at runtime and mount or unmount the host's outbound HTTP proxy policy without restarting. Follows the VPN going up or down within 30 seconds."
+  }
+}
