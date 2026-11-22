@@ -169,7 +169,7 @@ This depends on public exports of the DSH-internal package `@deepseek-ai/dsh-htt
 
 ## Development
 
-A host-only cordis plugin with no build step:
+Two halves — host and browser — neither with a build step:
 
 ```
 host/index.js       the host-side plugin (ESM; exports name and apply)
@@ -179,6 +179,7 @@ dsh.plugin.json     plugin manifest (description, contributions)
 ```
 
 To verify locally, drop the directory into a profile's `node_modules`, register the package name in `dsh.profile.bundles`, and restart the host.
+
 ### Writing a DSH plugin with a settings page: three silent-failure contracts
 
 Get any of these wrong and **nothing throws** — the page just stays empty. This project hit all three.

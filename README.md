@@ -169,7 +169,7 @@ dirname(process.execPath) / resources / app / dsh / node_modules
 
 ## 开发
 
-插件是纯 host 侧 cordis 插件，无构建步骤：
+插件分宿主与浏览器两半，两边都没有构建步骤：
 
 ```
 host/index.js       宿主侧插件（ESM，导出 name 与 apply）
@@ -179,6 +179,7 @@ dsh.plugin.json     插件清单（描述、贡献点）
 ```
 
 本地验证：把包目录放进某个 profile 的 `node_modules`，在 `dsh.profile.bundles` 里登记包名，重启宿主。
+
 ### 给 DSH 写带配置页的插件：三个会静默失效的契约
 
 这三处不对**不会报错**，只是界面上什么都没有。本项目全部踩过。
