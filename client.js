@@ -124,12 +124,12 @@ window.__ModuleLoader__.load({
       ctx.effect(() => () => { form.dispose(); }, "dsh-proxy-switch: form subscription");
 
       ctx.effect(
-        () => ctx.slots.inject("plugins.bundle.config", () => ctx.slots.register({
+        () => ctx.configForms.whileServed([CONFIG_NS], () => ctx.slots.inject("plugins.bundle.config", () => ctx.slots.register({
           name: "plugins.bundle.config",
           key: BUNDLE,
           locale: NS,
           inject: () => ({ hooks: { proxySwitchCard: store }, ...form.actions() }),
-        }, ProxySwitchCard)),
+        }, ProxySwitchCard))),
         "dsh-proxy-switch: config page",
       );
     }

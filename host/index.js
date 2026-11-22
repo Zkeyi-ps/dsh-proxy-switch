@@ -231,6 +231,35 @@ async function loadAppModule(pkgName, relPath) {
   return await import(pathToFileURL(p).href)
 }
 
+/**
+ * 配置 schema。
+ *
+ * 宿主的 settings 文档只服务「声明了 Config 的插件」——没有它，插件页会显示
+ * 「该插件当前未加载，暂时无法配置」。所以这里必须导出 Config，即使配置页只是
+ * 一个可选项。
+ *
+ * schemastery 不在 profile 的 node_modules 里，只能从宿主可执行文件推导加载；
+ * 加载失败时导出 undefined（插件本体照常工作，只是没有配置页），不让它拖垮启动。
+ */
+let Config
+try {
+  const schemastery = await loadAppModule('@deepseek-ai/schemastery', '@deepseek-ai/schemastery/lib/index.mjs')
+  const z = schemastery.default ?? schemastery
+  Config = z.object({
+    proxyHost: z.string().default('127.0.0.1'),
+    proxyPort: z.number().step(1).min(0).default(0),
+    proxyPorts: z.array(z.number()).default([7897, 7890, 10809, 8080]),
+    probeIntervalSec: z.number().step(1).min(5).default(30),
+    probeTimeoutMs: z.number().step(1).min(100).default(400),
+    discoverProcesses: z.boolean().default(true),
+    discoverTimeoutMs: z.number().step(1).min(1000).default(4000),
+    discoverCacheSec: z.number().step(1).min(10).default(60),
+  })
+} catch (e) {
+  warn('无法加载 schemastery，配置页不可用：' + (e && e.message ? e.message : e))
+}
+export { Config }
+
 export function apply(ctx, config) {
   const base = { ...DEFAULTS, ...(config || {}) }
   log('已加载；配置文件 ' + configFilePath())
