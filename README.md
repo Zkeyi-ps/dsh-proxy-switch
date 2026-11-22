@@ -179,6 +179,18 @@ dsh.plugin.json     插件清单（描述、贡献点）
 ```
 
 本地验证：把包目录放进某个 profile 的 `node_modules`，在 `dsh.profile.bundles` 里登记包名，重启宿主。
+### 给 DSH 写带配置页的插件：三个会静默失效的契约
+
+这三处不对**不会报错**，只是界面上什么都没有。本项目全部踩过。
+
+1. **宿主只服务导出了 `Config` 的插件。** 没有 `Config`，这个插件就不在 settings 文档的 namespace 列表里，配置页拿到的是「未加载」状态。
+2. **`Config` 里至少一个字段要标 `.volatile()`。** 宿主的 `volatileForm()` 只保留 volatile 字段；一个都没有时返回 `undefined`，整个 namespace 被丢弃。
+3. **`apply(ctx, config)` 里，volatile 字段是运行时引用，不是值。** 直接 `Number(config.proxyPort)` 得到的是 `NaN`——要 `config.proxyPort.get()`。本项目用 `unwrap()` 同时兼容「有 schema」和「schema 没加载」两种情况。
+
+另外两点：
+
+- **`schemastery` 不在 profile 的 `node_modules` 里。** 要从 `process.execPath` 推导出 app 的 `node_modules` 再动态加载，并用顶层 `await` 在模块求值阶段构造 `Config`。加载失败时导出 `undefined`，插件本体照常工作，只是没有配置页。
+- **浏览器半侧不是普通 ES 模块。** 格式是 `window.__ModuleLoader__.load({ id, factory: (require) => { ... } })`，依赖用 `require()` 取。手写 `react.createElement` 就不需要构建步骤。
 
 ## License
 

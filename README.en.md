@@ -179,6 +179,18 @@ dsh.plugin.json     plugin manifest (description, contributions)
 ```
 
 To verify locally, drop the directory into a profile's `node_modules`, register the package name in `dsh.profile.bundles`, and restart the host.
+### Writing a DSH plugin with a settings page: three silent-failure contracts
+
+Get any of these wrong and **nothing throws** — the page just stays empty. This project hit all three.
+
+1. **The host only serves plugins that export `Config`.** Without it the plugin never enters the settings document's namespace list, and the page reports "not loaded".
+2. **At least one `Config` field must be marked `.volatile()`.** The host's `volatileForm()` keeps only volatile fields; with none it returns `undefined` and the whole namespace is dropped.
+3. **Inside `apply(ctx, config)` a volatile field is a runtime reference, not a value.** `Number(config.proxyPort)` yields `NaN` — use `config.proxyPort.get()`. This project uses `unwrap()` so both the schema-loaded and schema-missing cases work.
+
+Two more:
+
+- **`schemastery` is not in the profile's `node_modules`.** Derive the app's `node_modules` from `process.execPath`, load it dynamically, and build `Config` with a top-level `await`. On failure export `undefined`: the plugin still runs, it just has no settings page.
+- **The browser half is not a normal ES module.** The format is `window.__ModuleLoader__.load({ id, factory: (require) => { ... } })`, with dependencies taken through `require()`. Hand-written `react.createElement` means no build step.
 
 ## License
 
